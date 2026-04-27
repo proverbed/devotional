@@ -1,5 +1,4 @@
-import { onCall, onRequest, HttpsError } from 'firebase-functions/v2/https';
-import { auth } from 'firebase-functions/v2';
+import { onCall, onRequest } from 'firebase-functions/v2/https';
 import express from 'express';
 import cors from 'cors';
 import { logger } from 'firebase-functions';

@@ -1,8 +1,8 @@
-import { auth } from 'firebase-functions/v2';
+import * as functionsV1 from 'firebase-functions/v1';
 import { FieldValue } from 'firebase-admin/firestore';
 import { db } from '../admin';
 
-export const onUserCreated = auth.user().onCreate(async (user) => {
+export const onUserCreated = functionsV1.auth.user().onCreate(async (user) => {
   await db.doc(`users/${user.uid}`).set({
     uid: user.uid,
     email: user.email ?? null,
