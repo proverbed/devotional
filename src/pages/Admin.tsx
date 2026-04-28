@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { httpsCallable } from 'firebase/functions';
 import { toast } from 'sonner';
 import { useAuth } from '../hooks/useAuth';
+import { functions } from '../services/firebase';
 import { saveDevotional, deleteDevotional, subscribeToDevotionals } from '../services/devotionals';
-import type { Devotional } from '../types/devotional';
+import type { Devotional, DevotionalInput } from '../types/devotional';
 
 const THEMES = [
   "God's Faithfulness",
@@ -198,54 +200,9 @@ function GenerateTab({ userEmail }: GenerateTabProps) {
     setStep('generating');
 
     try {
-      const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY as string | undefined;
-      if (!apiKey) throw new Error('VITE_ANTHROPIC_API_KEY is not set');
-
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-5',
-          max_tokens: 1000,
-          system:
-            'You are a warm, Spirit-filled devotional writer. You write short, powerful daily devotionals using the New King James Version (NKJV) of the Bible. Every devotional must be readable in about 2 minutes. Always respond with ONLY valid JSON, no markdown, no extra text.',
-          messages: [
-            {
-              role: 'user',
-              content: `Write a daily devotional on the theme: "${activeTheme}".
-
-Return ONLY this JSON structure:
-{
-  "subject": "a compelling email subject line under 60 characters",
-  "theme": "${activeTheme}",
-  "scripture": "the scripture verse text (NKJV)",
-  "scripture_ref": "Book Chapter:Verse",
-  "reflection": "2-3 warm, encouraging paragraphs connecting the scripture to daily life. About 120-150 words.",
-  "prayer": "A personal, heartfelt prayer of 3-4 sentences. Start with 'Father,'",
-  "declaration": "A bold, first-person faith declaration. One or two sentences. Start with 'I declare'"
-}`,
-            },
-          ],
-        }),
-      });
-
-      const data = await response.json() as {
-        content: Array<{ text?: string }>;
-        error?: { message: string };
-      };
-      if (data.error) throw new Error(data.error.message);
-
-      const text = data.content.map((b) => b.text ?? '').join('');
-      const parsed = JSON.parse(text.replace(/```json|```/g, '').trim()) as Omit<
-        Devotional,
-        'id' | 'createdAt' | 'createdBy'
-      >;
-      setDevotional(parsed);
+      const fn = httpsCallable<{ theme: string }, DevotionalInput>(functions, 'generateDevotional');
+      const result = await fn({ theme: activeTheme });
+      setDevotional(result.data);
       setStep('result');
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Generation failed. Try again.');

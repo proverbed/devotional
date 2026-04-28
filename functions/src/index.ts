@@ -4,6 +4,7 @@ import cors from 'cors';
 import { logger } from 'firebase-functions';
 
 export { onUserCreated } from './auth/onUserCreated';
+export { generateDevotional } from './devotionals/generateDevotional';
 
 // ---------------------------------------------------------------------------
 // Callable function example

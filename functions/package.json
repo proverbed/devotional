@@ -2,7 +2,9 @@
   "name": "functions",
   "description": "Cloud Functions for Firebase",
   "private": true,
-  "engines": { "node": "20" },
+  "engines": {
+    "node": "20"
+  },
   "main": "lib/src/index.js",
   "scripts": {
     "build": "rimraf ./lib && tsc",
@@ -17,6 +19,7 @@
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.91.1",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "firebase-admin": "^12.2.0",
